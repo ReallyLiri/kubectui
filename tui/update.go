@@ -32,6 +32,15 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.onContextSelected(nextContext)
 			case NamespaceList:
 				m.vms.namespaceList, cmd = m.vms.namespaceList.Update(msg)
+				nextNamespace := m.vms.namespaceList.SelectedItem().FilterValue()
+				m.onNamespaceSelected(nextNamespace)
+			}
+		case key.Matches(tmsg, keymap.Select):
+			switch m.state.focused {
+			case ContextList:
+				m.setCurrentContextFromSelected()
+			case NamespaceList:
+				m.setCurrentNamespaceFromSelected()
 			}
 		case key.Matches(tmsg, keymap.Help):
 			m.vms.help.ShowAll = !m.vms.help.ShowAll

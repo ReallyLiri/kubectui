@@ -76,6 +76,10 @@ func (m *model) onContextSelected(context string) {
 	}
 }
 
+func (m *model) onNamespaceSelected(namespace string) {
+	m.state.selectedNamespace = namespace
+}
+
 func (m *model) loadNamespaces(context string) {
 	if _, ok := m.namespacesByContext[context]; ok {
 		m.recreateNamespaceList(context)
@@ -125,6 +129,42 @@ func (m *model) doWithContext(context string, action func()) {
 		}
 	}()
 	action()
+}
+
+func (m *model) setCurrentContextFromSelected() {
+	if m.state.selectedContext == m.state.currentContext {
+		return
+	}
+	if err := m.kubeconf.ModifyCurrentContext(m.state.selectedContext); err != nil {
+		m.onError(fmt.Errorf("failed to switch to context %s: %w", m.state.selectedContext, err))
+	}
+	m.saveKubeconfig()
+	m.state.currentContext = m.state.selectedContext
+	var err error
+	m.state.currentNamespace, err = m.kubeconf.NamespaceOfContext(m.state.currentContext)
+	if err != nil {
+		m.onError(fmt.Errorf("failed to get current namespace of %s: %w", m.state.currentContext, err))
+	}
+	m.recreateContextList()
+}
+
+func (m *model) setCurrentNamespaceFromSelected() {
+	m.setCurrentContextFromSelected()
+	if m.state.selectedNamespace == m.state.currentNamespace {
+		return
+	}
+	if err := m.kubeconf.SetNamespace(m.state.currentContext, m.state.selectedNamespace); err != nil {
+		m.onError(fmt.Errorf("failed to switch to namespace %s: %w", m.state.selectedNamespace, err))
+	}
+	m.saveKubeconfig()
+	m.state.currentNamespace = m.state.selectedNamespace
+	m.recreateNamespaceList(m.state.currentContext)
+}
+
+func (m *model) saveKubeconfig() {
+	if err := m.kubeconf.Save(); err != nil {
+		m.onError(fmt.Errorf("failed to save kubeconfig: %w", err))
+	}
 }
 
 func (m *model) onError(err error) {

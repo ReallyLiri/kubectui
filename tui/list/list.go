@@ -52,7 +52,7 @@ func NewItemsList(items []string, componentName string, selectedItem string) lis
 		0,
 		0,
 	)
-	l.SetFilteringEnabled(false)
+	l.SetFilteringEnabled(true)
 	l.SetShowHelp(false)
 	l.SetShowTitle(false)
 	l.SetStatusBarItemName(componentName, componentName)

@@ -20,7 +20,7 @@ func (m *model) View() string {
 
 	var contextsList, namespacesList string
 
-	listWidth := m.state.termWidth/ComponentCount - borderWidth - 2
+	listWidth := m.state.termWidth/ComponentCount - borderWidth - 3
 	listHeight := centerHeight - borderHeight + 3
 
 	if len(m.contexts) == 0 {

@@ -27,6 +27,10 @@ var (
 		key.WithKeys(tea.KeyTab.String(), "n"),
 		key.WithHelp("Tab/n", "next focus"),
 	)
+	Select = key.NewBinding(
+		key.WithKeys(tea.KeyEnter.String(), "s"),
+		key.WithHelp("Enter/s", "select current ctx or ns"),
+	)
 	Search = key.NewBinding(
 		key.WithKeys("/"),
 		key.WithHelp("/", "search"),
@@ -51,7 +55,9 @@ func GetKeyMap() help.KeyMap {
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{Help, Quit}
+	return []key.Binding{
+		Help, Quit, Select,
+	}
 }
 
 func (k keyMap) FullHelp() [][]key.Binding {
@@ -59,6 +65,7 @@ func (k keyMap) FullHelp() [][]key.Binding {
 		{Tab},
 		{Up, Down},
 		{Left, Right},
+		{Select},
 		{Help, Quit},
 	}
 }
