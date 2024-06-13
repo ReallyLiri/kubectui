@@ -1,6 +1,6 @@
 # kubectui
 
-A terminal UI for [ahmetb/kubect|kubens](https://github.com/ahmetb/kubectx), built using [charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea)
+A terminal UI for [ahmetb/kubectx|kubens](https://github.com/ahmetb/kubectx), built using [charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea)
 
 ```sh
 go install github.com/reallyliri/kubectui@latest
