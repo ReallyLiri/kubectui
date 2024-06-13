@@ -7,10 +7,9 @@ import (
 	"github.com/ahmetb/kubectx/core/kubeclient"
 	"github.com/ahmetb/kubectx/core/kubeconfig"
 	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/reallyliri/kubectui/tui/keymap"
-	"github.com/samber/lo"
+	"github.com/reallyliri/kubectui/tui/list"
 	"log"
 )
 
@@ -41,6 +40,7 @@ func newModel(title string, kubeconf *kubeconfig.Kubeconfig) (*model, error) {
 	contexts := kubeconf.ContextNames()
 	natsort.Sort(contexts)
 
+	helpVM := help.New()
 	m := &model{
 		kubeconf:            kubeconf,
 		contexts:            contexts,
@@ -54,11 +54,11 @@ func newModel(title string, kubeconf *kubeconfig.Kubeconfig) (*model, error) {
 			title:  title,
 		},
 		vms: viewModels{
-			contextList: newItemsList(contexts, ContextList),
-			help:        help.New(),
+			help: helpVM,
 		},
 	}
 
+	m.recreateContextList()
 	m.onContextSelected(m.state.currentContext)
 
 	return m, nil
@@ -82,8 +82,8 @@ func (m *model) onContextSelected(context string) {
 }
 
 func (m *model) loadNamespaces(context string) {
-	if namespaces, ok := m.namespacesByContext[context]; ok {
-		m.vms.namespaceList = newItemsList(namespaces, NamespaceList)
+	if _, ok := m.namespacesByContext[context]; ok {
+		m.recreateNamespaceList(context)
 		return
 	}
 
@@ -100,35 +100,17 @@ func (m *model) loadNamespaces(context string) {
 			m.namespacesByContext[context] = namespaces
 		})
 		m.state.namespacesLoading = false
-		m.vms.namespaceList = newItemsList(m.namespacesByContext[context], NamespaceList)
+		m.recreateNamespaceList(context)
 		m.sender.Send(actionDoneMsg{})
 	}()
 }
 
-func newItemsList(items []string, component Component) list.Model {
-	delegate := list.NewDefaultDelegate()
-	delegate.ShowDescription = false
-	delegate.SetHeight(1)
-	delegate.SetSpacing(0)
-	lst := list.New(
-		lo.Map(items, func(name string, _ int) list.Item {
-			return TablesListItem(name)
-		}),
-		delegate,
-		0,
-		0,
-	)
-	lst.SetFilteringEnabled(false)
-	lst.SetShowHelp(false)
-	lst.SetShowTitle(false)
-	switch component {
-	case ContextList:
-		lst.SetStatusBarItemName("ctx", "ctx")
-	case NamespaceList:
-		lst.SetStatusBarItemName("ns", "ns")
-	}
-	lst.SetShowPagination(false)
-	return lst
+func (m *model) recreateContextList() {
+	m.vms.contextList = list.NewItemsList(m.contexts, "ctx")
+}
+
+func (m *model) recreateNamespaceList(context string) {
+	m.vms.namespaceList = list.NewItemsList(m.namespacesByContext[context], "ns")
 }
 
 func (m *model) doWithContext(context string, action func()) {

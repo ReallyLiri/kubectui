@@ -22,5 +22,5 @@ var (
 	BreadcrumbsTitleStyle   = lipgloss.NewStyle().Foreground(GreenTint)
 	BorderFocusedStyle      = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(BorderFocusedTint).Padding(0, 1)
 	BorderBluredStyle       = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(BorderBluredTint).Padding(0, 1)
-	NoDataStyle             = lipgloss.NewStyle().Foreground(SubTitleTint).AlignHorizontal(lipgloss.Center).Padding(2)
+	NoDataStyle             = lipgloss.NewStyle().Foreground(SubTitleTint).AlignHorizontal(lipgloss.Left).Padding(2)
 )
