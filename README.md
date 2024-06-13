@@ -3,7 +3,8 @@
 A terminal UI for [ahmetb/kubectx|kubens](https://github.com/ahmetb/kubectx), built using [charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea)
 
 ```sh
-go install github.com/reallyliri/kubectui@latest
+git clone github.com/reallyliri/kubectui.git
+go install .
 ```
 
 ![demo](https://i.imgur.com/Q5ziJXH.gif)
