@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/reallyliri/kubectui/tui/keymap"
+	"strings"
 )
 
 const maxWidth = 250
@@ -21,7 +22,31 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state.termHeight = tmsg.Height
 		}
 	case tea.KeyMsg:
+		if m.state.renaming {
+			switch {
+			case key.Matches(tmsg, keymap.Select):
+				// TODO
+				m.state.renaming = false
+			case key.Matches(tmsg, keymap.Cancel):
+				m.state.renaming = false
+			default:
+				// TODO
+			}
+		}
 		switch {
+		case m.state.deleting:
+			switch {
+			case key.Matches(tmsg, keymap.Select):
+				value := strings.ToLower(strings.TrimSpace(m.vms.input.Value()))
+				m.finishAction()
+				if value == "y" || value == "yes" {
+					m.deleteSelectedContext()
+				}
+			case key.Matches(tmsg, keymap.Cancel):
+				m.finishAction()
+			default:
+				m.vms.input, cmd = m.vms.input.Update(msg)
+			}
 		case key.Matches(tmsg, keymap.Tab), key.Matches(tmsg, keymap.Left), key.Matches(tmsg, keymap.Right):
 			m.state.focused = (m.state.focused + 1) % ComponentCount
 		case key.Matches(tmsg, keymap.Up), key.Matches(tmsg, keymap.Down):
@@ -42,6 +67,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case NamespaceList:
 				m.setCurrentNamespaceFromSelected()
 			}
+		case key.Matches(tmsg, keymap.Rename):
+			m.state.renaming = true
+		case key.Matches(tmsg, keymap.Delete):
+			m.state.deleting = true
+			m.vms.input.Focus()
 		case key.Matches(tmsg, keymap.Help):
 			m.vms.help.ShowAll = !m.vms.help.ShowAll
 		case key.Matches(tmsg, keymap.Quit):
@@ -50,4 +80,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	return m, cmd
+}
+
+func (m *model) finishAction() {
+	m.vms.input.SetValue("")
+	m.vms.input.Blur()
+	m.state.deleting = false
+	m.state.renaming = false
 }

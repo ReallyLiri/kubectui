@@ -4,6 +4,7 @@ import (
 	"github.com/ahmetb/kubectx/core/kubeconfig"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -18,6 +19,8 @@ type modelState struct {
 	selectedNamespace string
 	namespacesLoading bool
 	focused           Component
+	renaming          bool
+	deleting          bool
 	quitting          bool
 	termWidth         int
 	termHeight        int
@@ -32,6 +35,7 @@ type viewModels struct {
 	help          help.Model
 	contextList   list.Model
 	namespaceList list.Model
+	input         textinput.Model
 }
 
 type model struct {

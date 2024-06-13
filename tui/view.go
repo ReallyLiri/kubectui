@@ -15,24 +15,49 @@ func (m *model) View() string {
 	borderWidth, borderHeight := styles.BorderFocusedStyle.GetFrameSize()
 
 	title := titleView(m.config.title, m.state.currentContext, m.state.currentNamespace)
+
+	if m.state.deleting {
+		message := lipgloss.JoinVertical(
+			lipgloss.Top,
+			lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				"Are you sure you want to ",
+				styles.DangerStyle.Render("delete"),
+			),
+			lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				"the context ",
+				lipgloss.NewStyle().Foreground(styles.GreenTint).Render(m.state.selectedContext),
+				styles.SubTitleStyle.Render(" (y/n or esc to cancel)"),
+			),
+			m.vms.input.View(),
+		)
+		return lipgloss.JoinVertical(
+			lipgloss.Top,
+			title,
+			" ",
+			message,
+		)
+	}
+
 	footer := m.vms.help.View(m.config.keymap)
 	centerHeight := m.state.termHeight - lipgloss.Height(title) - lipgloss.Height(footer) - 5
 
 	var contextsList, namespacesList string
 
-	listWidth := m.state.termWidth/ComponentCount - borderWidth - 3
-	listHeight := centerHeight - borderHeight + 3
+	mainWidth := m.state.termWidth/ComponentCount - borderWidth - 3
+	mainHeight := centerHeight - borderHeight + 3
 
 	if len(m.contexts) == 0 {
-		contextsList = m.emptyMessage(ContextList, listWidth, listHeight)
+		contextsList = m.emptyMessage(ContextList, mainWidth, mainHeight)
 	} else {
-		m.vms.contextList.SetSize(listWidth, listHeight)
+		m.vms.contextList.SetSize(mainWidth, mainHeight)
 		contextsList = withBorder(m.vms.contextList.View(), m.state.focused == ContextList)
 		if m.state.selectedContext != "" {
 			if m.state.namespacesLoading || len(m.namespacesByContext[m.state.selectedContext]) == 0 {
-				namespacesList = m.emptyMessage(NamespaceList, listWidth, listHeight)
+				namespacesList = m.emptyMessage(NamespaceList, mainWidth, mainHeight)
 			} else {
-				m.vms.namespaceList.SetSize(listWidth, listHeight)
+				m.vms.namespaceList.SetSize(mainWidth, mainHeight)
 				namespacesList = withBorder(m.vms.namespaceList.View(), m.state.focused == NamespaceList)
 			}
 		}
@@ -58,10 +83,14 @@ func titleView(title, context, namespace string) string {
 	if context != "" {
 		parts = append(parts, styles.BreadcrumbsSectionStyle.Render(" ", format.BreadcrumbsSeparator, " ctx: "))
 		parts = append(parts, styles.BreadcrumbsTitleStyle.Render(context))
-	}
-	if namespace != "" {
-		parts = append(parts, styles.BreadcrumbsSectionStyle.Render(" ", format.BreadcrumbsSeparator, " ns: "))
-		parts = append(parts, styles.BreadcrumbsTitleStyle.Render(namespace))
+		if namespace != "" {
+			parts = append(parts, styles.BreadcrumbsSectionStyle.Render(" ", format.BreadcrumbsSeparator, " ns: "))
+			parts = append(parts, styles.BreadcrumbsTitleStyle.Render(namespace))
+		} else {
+			parts = append(parts, styles.BreadcrumbsSectionStyle.Render(" ", format.BreadcrumbsSeparator, " No ns selected"))
+		}
+	} else {
+		parts = append(parts, styles.BreadcrumbsSectionStyle.Render(" ", format.BreadcrumbsSeparator, " No ctx selected"))
 	}
 	return lipgloss.JoinHorizontal(lipgloss.Center, parts...)
 }

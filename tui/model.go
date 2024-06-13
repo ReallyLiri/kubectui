@@ -7,6 +7,7 @@ import (
 	"github.com/ahmetb/kubectx/core/kubeclient"
 	"github.com/ahmetb/kubectx/core/kubeconfig"
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/reallyliri/kubectui/tui/keymap"
 	"github.com/reallyliri/kubectui/tui/list"
@@ -55,7 +56,8 @@ func newModel(title string, kubeconf *kubeconfig.Kubeconfig) (*model, error) {
 			title:  title,
 		},
 		vms: viewModels{
-			help: helpVM,
+			help:  helpVM,
+			input: textinput.New(),
 		},
 	}
 
@@ -159,6 +161,41 @@ func (m *model) setCurrentNamespaceFromSelected() {
 	m.saveKubeconfig()
 	m.state.currentNamespace = m.state.selectedNamespace
 	m.recreateNamespaceList(m.state.currentContext)
+}
+
+func (m *model) renameSelectedContext(newName string) {
+	prevName := m.state.currentContext
+	if newName == prevName {
+		return
+	}
+	if err := m.kubeconf.ModifyContextName(m.state.selectedContext, newName); err != nil {
+		m.onError(fmt.Errorf("failed to rename context '%s' to '%s': %w", m.state.selectedContext, newName, err))
+	}
+	m.saveKubeconfig()
+	m.contexts = m.kubeconf.ContextNames()
+	natsort.Sort(m.contexts)
+	m.state.currentContext = newName
+	if m.state.selectedContext == prevName {
+		m.state.selectedContext = newName
+	}
+}
+
+func (m *model) deleteSelectedContext() {
+	selectedContext := m.state.selectedContext
+	if err := m.kubeconf.DeleteContextEntry(selectedContext); err != nil {
+		m.onError(fmt.Errorf("failed to delete context '%s': %w", selectedContext, err))
+	}
+	if m.state.currentContext == selectedContext {
+		m.state.currentContext = ""
+		if err := m.kubeconf.UnsetCurrentContext(); err != nil {
+			m.onError(fmt.Errorf("failed to unset current context: %w", err))
+		}
+	}
+	m.saveKubeconfig()
+	m.contexts = m.kubeconf.ContextNames()
+	natsort.Sort(m.contexts)
+	selectedContext = ""
+	m.recreateContextList()
 }
 
 func (m *model) saveKubeconfig() {

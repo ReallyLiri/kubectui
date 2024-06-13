@@ -6,6 +6,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// hjkl is vim standard for movement
+
 var (
 	Up = key.NewBinding(
 		key.WithKeys(tea.KeyUp.String(), "k"),
@@ -30,6 +32,18 @@ var (
 	Select = key.NewBinding(
 		key.WithKeys(tea.KeyEnter.String(), "s"),
 		key.WithHelp("Enter/s", "select current ctx or ns"),
+	)
+	Rename = key.NewBinding(
+		key.WithKeys("r"),
+		key.WithHelp("r", "rename ctx"),
+	)
+	Delete = key.NewBinding(
+		key.WithKeys("d"),
+		key.WithHelp("d", "delete ctx"),
+	)
+	Cancel = key.NewBinding(
+		key.WithKeys(tea.KeyEscape.String()),
+		key.WithHelp(tea.KeyEscape.String(), "cancel"),
 	)
 	Search = key.NewBinding(
 		key.WithKeys("/"),
@@ -63,9 +77,8 @@ func (k keyMap) ShortHelp() []key.Binding {
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{Tab},
-		{Up, Down},
-		{Left, Right},
-		{Select},
+		{Left, Up, Down, Right},
+		{Rename, Delete, Select},
 		{Help, Quit},
 	}
 }

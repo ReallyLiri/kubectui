@@ -8,6 +8,7 @@ import (
 const (
 	BlueTint          = lipgloss.Color("#388de9")
 	GreenTint         = lipgloss.Color("#46b17b")
+	RedTint           = lipgloss.Color("#ff0000")
 	BorderFocusedTint = lipgloss.Color("63")
 	BorderBlurredTint = lipgloss.Color("240")
 )
@@ -22,5 +23,6 @@ var (
 	BorderFocusedStyle      = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(BorderFocusedTint).Padding(0, 1)
 	BorderBlurredStyle      = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(BorderBlurredTint).Padding(0, 1)
 	NoDataStyle             = lipgloss.NewStyle().Foreground(SubTitleTint).AlignHorizontal(lipgloss.Left).Padding(2)
-	ErrorStyle              = lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0000"))
+	ErrorStyle              = lipgloss.NewStyle().Foreground(RedTint)
+	DangerStyle             = lipgloss.NewStyle().Foreground(RedTint)
 )
