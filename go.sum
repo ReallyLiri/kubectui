@@ -209,6 +209,8 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
+github.com/reallyliri/bubbles v0.18.2 h1:kdC7GYzk8r+hjg5SXj/rMyIURL+FdI2Cjs37XUga+Do=
+github.com/reallyliri/bubbles v0.18.2/go.mod h1:z199e1Fc5JXB44at0N3xsoBgbQh2rFAFw35+F4/wv+8=
 github.com/reallyliri/kubectx v0.9.5-1 h1:6aZ3VFvwOvlzuNTZbIjKYZ09ebGPTHG+mBbrgbg0bKk=
 github.com/reallyliri/kubectx v0.9.5-1/go.mod h1:98R6Y+HS0bkgJhmRJXH33qp8cRu6FVrsV4ktq37Uh6c=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=

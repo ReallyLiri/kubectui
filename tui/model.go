@@ -63,6 +63,7 @@ func newModel(title string, kubeconf *kubeconfig.Kubeconfig) (*model, error) {
 
 	m.recreateContextList()
 	m.onContextSelected(m.state.selectedContext)
+	m.state.currentNamespace, _ = kubeconf.NamespaceOfContext(m.state.currentContext)
 
 	return m, nil
 }
@@ -110,12 +111,11 @@ func (m *model) recreateContextList() {
 }
 
 func (m *model) recreateNamespaceList(context string) {
-	var err error
-	m.state.currentNamespace, err = m.kubeconf.NamespaceOfContext(context)
+	namespaceOfContext, err := m.kubeconf.NamespaceOfContext(context)
 	if err != nil {
 		m.onError(fmt.Errorf("failed to get current namespace of %s: %w", context, err))
 	}
-	m.state.selectedNamespace = m.state.currentNamespace
+	m.state.selectedNamespace = namespaceOfContext
 	m.vms.namespaceList = list.NewItemsList(m.namespacesByContext[context], "ns", m.state.currentNamespace)
 }
 
@@ -179,6 +179,8 @@ func (m *model) renameSelectedContext(newName string) {
 	m.saveKubeconfig()
 	m.contexts = m.kubeconf.ContextNames()
 	natsort.Sort(m.contexts)
+	m.namespacesByContext[newName] = m.namespacesByContext[prevName]
+	delete(m.namespacesByContext, prevName)
 	m.state.selectedContext = newName
 	m.recreateContextList()
 }
@@ -196,8 +198,9 @@ func (m *model) deleteSelectedContext() {
 	}
 	m.saveKubeconfig()
 	m.contexts = m.kubeconf.ContextNames()
+	delete(m.namespacesByContext, selectedContext)
 	natsort.Sort(m.contexts)
-	selectedContext = ""
+	m.state.selectedContext = ""
 	m.recreateContextList()
 }
 

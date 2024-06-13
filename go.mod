@@ -76,7 +76,6 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-//replace github.com/charmbracelet/bubbles => github.com/reallyliri/bubbles v0.18.1
-replace github.com/charmbracelet/bubbles => ../bubbles
+replace github.com/charmbracelet/bubbles => github.com/reallyliri/bubbles v0.18.2
 
 replace github.com/ahmetb/kubectx => github.com/reallyliri/kubectx v0.9.5-1
