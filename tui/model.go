@@ -10,6 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/reallyliri/kubectui/tui/keymap"
 	"github.com/reallyliri/kubectui/tui/list"
+	"github.com/reallyliri/kubectui/tui/styles"
 	"log"
 )
 
@@ -72,12 +73,6 @@ func (m *model) onContextSelected(context string) {
 	m.state.selectedContext = context
 	if context != "" {
 		m.loadNamespaces(context)
-		var err error
-		m.state.currentNamespace, err = m.kubeconf.NamespaceOfContext(context)
-		if err != nil {
-			m.onError(fmt.Errorf("failed to get current namespace of %s: %w", context, err))
-		}
-		m.state.selectedNamespace = m.state.currentNamespace
 	}
 }
 
@@ -106,11 +101,17 @@ func (m *model) loadNamespaces(context string) {
 }
 
 func (m *model) recreateContextList() {
-	m.vms.contextList = list.NewItemsList(m.contexts, "ctx")
+	m.vms.contextList = list.NewItemsList(m.contexts, "ctx", m.state.currentContext)
 }
 
 func (m *model) recreateNamespaceList(context string) {
-	m.vms.namespaceList = list.NewItemsList(m.namespacesByContext[context], "ns")
+	var err error
+	m.state.currentNamespace, err = m.kubeconf.NamespaceOfContext(context)
+	if err != nil {
+		m.onError(fmt.Errorf("failed to get current namespace of %s: %w", context, err))
+	}
+	m.state.selectedNamespace = m.state.currentNamespace
+	m.vms.namespaceList = list.NewItemsList(m.namespacesByContext[context], "ns", m.state.currentNamespace)
 }
 
 func (m *model) doWithContext(context string, action func()) {
@@ -127,5 +128,5 @@ func (m *model) doWithContext(context string, action func()) {
 }
 
 func (m *model) onError(err error) {
-	log.Fatalf("error: %v", err)
+	log.Fatalf(styles.ErrorStyle.Render("error: %v"), err)
 }

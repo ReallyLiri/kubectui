@@ -20,7 +20,7 @@ func (m *model) View() string {
 
 	var contextsList, namespacesList string
 
-	listWidth := m.state.termWidth/ComponentCount - borderWidth
+	listWidth := m.state.termWidth/ComponentCount - borderWidth - 2
 	listHeight := centerHeight - borderHeight + 3
 
 	if len(m.contexts) == 0 {
@@ -70,7 +70,7 @@ func withBorder(ui string, focused bool) string {
 	if focused {
 		return styles.BorderFocusedStyle.Render(ui)
 	} else {
-		return styles.BorderBluredStyle.Render(ui)
+		return styles.BorderBlurredStyle.Render(ui)
 	}
 }
 
