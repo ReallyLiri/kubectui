@@ -4,13 +4,19 @@ import (
 	"github.com/ahmetb/kubectx/core/kubeconfig"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 )
+
+type MessageSender interface {
+	Send(msg tea.Msg)
+}
 
 type modelState struct {
 	currentContext    string
 	currentNamespace  string
 	selectedContext   string
 	selectedNamespace string
+	namespacesLoading bool
 	focused           Component
 	quitting          bool
 	termWidth         int
@@ -36,6 +42,7 @@ type model struct {
 	state  modelState
 	config modelConfig
 	vms    viewModels
+	sender MessageSender
 }
 
 type Component int
@@ -62,3 +69,8 @@ func (t TablesListItem) Title() string {
 func (t TablesListItem) Description() string {
 	return ""
 }
+
+type actionDoneMsg struct {
+}
+
+var _ tea.Msg = actionDoneMsg{}

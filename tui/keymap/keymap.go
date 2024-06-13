@@ -17,15 +17,15 @@ var (
 	)
 	Left = key.NewBinding(
 		key.WithKeys(tea.KeyLeft.String(), "h"),
-		key.WithHelp("←/h", "move left"),
+		key.WithHelp("←/h", "switch focus left"),
 	)
 	Right = key.NewBinding(
 		key.WithKeys(tea.KeyRight.String(), "l"),
-		key.WithHelp("→/l", "move right"),
+		key.WithHelp("→/l", "switch focus right"),
 	)
 	Tab = key.NewBinding(
 		key.WithKeys(tea.KeyTab.String(), "n"),
-		key.WithHelp("Tab/n", "change focus"),
+		key.WithHelp("Tab/n", "next focus"),
 	)
 	Search = key.NewBinding(
 		key.WithKeys("/"),

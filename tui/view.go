@@ -20,12 +20,21 @@ func (m *model) View() string {
 
 	var contextsList, namespacesList string
 
-	if m.state.selectedContext != "" {
-		m.vms.contextList.SetSize(m.state.termWidth/2-borderWidth, centerHeight-borderHeight+3)
+	listWidth := m.state.termWidth/ComponentCount - borderWidth
+	listHeight := centerHeight - borderHeight + 3
+
+	if len(m.contexts) == 0 {
+		contextsList = m.emptyMessage(ContextList, listWidth, listHeight)
+	} else {
+		m.vms.contextList.SetSize(listWidth, listHeight)
 		contextsList = withBorder(m.vms.contextList.View(), m.state.focused == ContextList)
-		if m.state.selectedNamespace != "" {
-			m.vms.namespaceList.SetSize(m.state.termWidth/2-borderWidth, centerHeight-borderHeight+3)
-			namespacesList = withBorder(m.vms.namespaceList.View(), m.state.focused == NamespaceList)
+		if m.state.selectedContext != "" {
+			if m.state.namespacesLoading || len(m.namespacesByContext[m.state.selectedContext]) == 0 {
+				namespacesList = m.emptyMessage(NamespaceList, listWidth, listHeight)
+			} else {
+				m.vms.namespaceList.SetSize(listWidth, listHeight)
+				namespacesList = withBorder(m.vms.namespaceList.View(), m.state.focused == NamespaceList)
+			}
 		}
 	}
 
@@ -63,4 +72,25 @@ func withBorder(ui string, focused bool) string {
 	} else {
 		return styles.BorderBluredStyle.Render(ui)
 	}
+}
+
+func (m *model) emptyMessage(component Component, width, height int) string {
+	var message string
+	switch component {
+	case ContextList:
+		message = "No contexts"
+	case NamespaceList:
+		if m.state.namespacesLoading {
+			message = "Loading namespaces..."
+		} else {
+			message = "No namespaces"
+		}
+	}
+	return withBorder(
+		styles.NoDataStyle.
+			Width(width).
+			Height(height).
+			Render(message),
+		m.state.focused == component,
+	)
 }

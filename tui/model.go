@@ -26,6 +26,7 @@ func Run(ctx context.Context, title string, kubeconf *kubeconfig.Kubeconfig) err
 		return err
 	}
 	program := tea.NewProgram(m)
+	m.sender = program
 	go func() {
 		<-ctx.Done()
 		program.Quit()
@@ -70,18 +71,7 @@ func (m *model) onContextSelected(context string) {
 
 	m.state.selectedContext = context
 	if context != "" {
-		if _, ok := m.namespacesByContext[context]; !ok {
-			m.doWithContext(context, func() {
-				namespaces, err := kubeclient.QueryNamespaces(m.kubeconf)
-				if err != nil {
-					m.onError(fmt.Errorf("failed to query namespaces of %s: %w", context, err))
-				}
-				if namespaces != nil {
-					natsort.Sort(namespaces)
-				}
-				m.namespacesByContext[context] = namespaces
-			})
-		}
+		m.loadNamespaces(context)
 		var err error
 		m.state.currentNamespace, err = m.kubeconf.NamespaceOfContext(context)
 		if err != nil {
@@ -89,7 +79,30 @@ func (m *model) onContextSelected(context string) {
 		}
 		m.state.selectedNamespace = m.state.currentNamespace
 	}
-	m.vms.namespaceList = newItemsList(m.namespacesByContext[context], NamespaceList)
+}
+
+func (m *model) loadNamespaces(context string) {
+	if namespaces, ok := m.namespacesByContext[context]; ok {
+		m.vms.namespaceList = newItemsList(namespaces, NamespaceList)
+		return
+	}
+
+	m.state.namespacesLoading = true
+	go func() {
+		m.doWithContext(context, func() {
+			namespaces, err := kubeclient.QueryNamespaces(m.kubeconf)
+			if err != nil {
+				m.onError(fmt.Errorf("failed to query namespaces of %s: %w", context, err))
+			}
+			if namespaces != nil {
+				natsort.Sort(namespaces)
+			}
+			m.namespacesByContext[context] = namespaces
+		})
+		m.state.namespacesLoading = false
+		m.vms.namespaceList = newItemsList(m.namespacesByContext[context], NamespaceList)
+		m.sender.Send(actionDoneMsg{})
+	}()
 }
 
 func newItemsList(items []string, component Component) list.Model {
