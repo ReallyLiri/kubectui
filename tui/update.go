@@ -22,26 +22,18 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state.termHeight = tmsg.Height
 		}
 	case tea.KeyMsg:
-		if m.state.renaming {
-			switch {
-			case key.Matches(tmsg, keymap.Select):
-				// TODO
-				m.state.renaming = false
-			case key.Matches(tmsg, keymap.Cancel):
-				m.state.renaming = false
-			default:
-				// TODO
-			}
-		}
 		switch {
-		case m.state.deleting:
+		case m.state.deleting || m.state.renaming:
 			switch {
 			case key.Matches(tmsg, keymap.Select):
 				value := strings.ToLower(strings.TrimSpace(m.vms.input.Value()))
-				m.finishAction()
-				if value == "y" || value == "yes" {
+				if m.state.deleting && (value == "y" || value == "yes") {
 					m.deleteSelectedContext()
 				}
+				if m.state.renaming && value != "" {
+					m.renameSelectedContext(value)
+				}
+				m.finishAction()
 			case key.Matches(tmsg, keymap.Cancel):
 				m.finishAction()
 			default:
@@ -69,6 +61,8 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case key.Matches(tmsg, keymap.Rename):
 			m.state.renaming = true
+			m.vms.input.SetValue(m.state.selectedContext)
+			m.vms.input.Focus()
 		case key.Matches(tmsg, keymap.Delete):
 			m.state.deleting = true
 			m.vms.input.Focus()

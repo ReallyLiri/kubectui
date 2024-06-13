@@ -62,16 +62,12 @@ func newModel(title string, kubeconf *kubeconfig.Kubeconfig) (*model, error) {
 	}
 
 	m.recreateContextList()
-	m.onContextSelected(m.state.currentContext)
+	m.onContextSelected(m.state.selectedContext)
 
 	return m, nil
 }
 
 func (m *model) onContextSelected(context string) {
-	if m.state.selectedContext == context {
-		return
-	}
-
 	m.state.selectedContext = context
 	if context != "" {
 		m.loadNamespaces(context)
@@ -108,6 +104,9 @@ func (m *model) loadNamespaces(context string) {
 
 func (m *model) recreateContextList() {
 	m.vms.contextList = list.NewItemsList(m.contexts, "ctx", m.state.currentContext)
+	if m.state.selectedContext == "" {
+		m.state.selectedContext = m.vms.contextList.SelectedItem().FilterValue()
+	}
 }
 
 func (m *model) recreateNamespaceList(context string) {
@@ -164,20 +163,24 @@ func (m *model) setCurrentNamespaceFromSelected() {
 }
 
 func (m *model) renameSelectedContext(newName string) {
-	prevName := m.state.currentContext
+	prevName := m.state.selectedContext
 	if newName == prevName {
 		return
 	}
 	if err := m.kubeconf.ModifyContextName(m.state.selectedContext, newName); err != nil {
 		m.onError(fmt.Errorf("failed to rename context '%s' to '%s': %w", m.state.selectedContext, newName, err))
 	}
+	if m.state.currentContext == prevName {
+		m.state.currentContext = newName
+		if err := m.kubeconf.ModifyCurrentContext(newName); err != nil {
+			m.onError(fmt.Errorf("failed to switch to renamed context '%s': %w", newName, err))
+		}
+	}
 	m.saveKubeconfig()
 	m.contexts = m.kubeconf.ContextNames()
 	natsort.Sort(m.contexts)
-	m.state.currentContext = newName
-	if m.state.selectedContext == prevName {
-		m.state.selectedContext = newName
-	}
+	m.state.selectedContext = newName
+	m.recreateContextList()
 }
 
 func (m *model) deleteSelectedContext() {

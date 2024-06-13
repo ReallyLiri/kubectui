@@ -17,7 +17,7 @@ func (m *model) View() string {
 	title := titleView(m.config.title, m.state.currentContext, m.state.currentNamespace)
 
 	if m.state.deleting {
-		message := lipgloss.JoinVertical(
+		content := lipgloss.JoinVertical(
 			lipgloss.Top,
 			lipgloss.JoinHorizontal(
 				lipgloss.Left,
@@ -36,7 +36,26 @@ func (m *model) View() string {
 			lipgloss.Top,
 			title,
 			" ",
-			message,
+			content,
+		)
+	}
+
+	if m.state.renaming {
+		content := lipgloss.JoinVertical(
+			lipgloss.Top,
+			lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				"Enter the new name for the context ",
+				lipgloss.NewStyle().Foreground(styles.GreenTint).Render(m.state.selectedContext),
+				styles.SubTitleStyle.Render(" (enter to apply or esc to cancel)"),
+			),
+			m.vms.input.View(),
+		)
+		return lipgloss.JoinVertical(
+			lipgloss.Top,
+			title,
+			" ",
+			content,
 		)
 	}
 
