@@ -207,6 +207,20 @@ func (m *model) saveKubeconfig() {
 	}
 }
 
+func (m *model) refresh() {
+	if err := m.kubeconf.Parse(); err != nil {
+		m.onError(fmt.Errorf("failed to parse kubeconfig: %w", err))
+	}
+	contexts := m.kubeconf.ContextNames()
+	natsort.Sort(contexts)
+	m.contexts = contexts
+	m.state.selectedContext = ""
+	m.state.selectedNamespace = ""
+	m.namespacesByContext = make(map[string][]string, len(contexts))
+	m.recreateContextList()
+	m.onContextSelected(m.state.selectedContext)
+}
+
 func (m *model) onError(err error) {
 	log.Fatalf(styles.ErrorStyle.Render("error: %v"), err)
 }

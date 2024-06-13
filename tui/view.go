@@ -106,10 +106,10 @@ func titleView(title, context, namespace string) string {
 			parts = append(parts, styles.BreadcrumbsSectionStyle.Render(" ", format.BreadcrumbsSeparator, " ns: "))
 			parts = append(parts, styles.BreadcrumbsTitleStyle.Render(namespace))
 		} else {
-			parts = append(parts, styles.BreadcrumbsSectionStyle.Render(" ", format.BreadcrumbsSeparator, " No ns selected"))
+			parts = append(parts, styles.BreadcrumbsSectionStyle.Render(" ", format.BreadcrumbsSeparator, " No current ns"))
 		}
 	} else {
-		parts = append(parts, styles.BreadcrumbsSectionStyle.Render(" ", format.BreadcrumbsSeparator, " No ctx selected"))
+		parts = append(parts, styles.BreadcrumbsSectionStyle.Render(" ", format.BreadcrumbsSeparator, " No current ctx"))
 	}
 	return lipgloss.JoinHorizontal(lipgloss.Center, parts...)
 }

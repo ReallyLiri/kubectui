@@ -39,6 +39,8 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 				m.vms.input, cmd = m.vms.input.Update(msg)
 			}
+		case key.Matches(tmsg, keymap.Refresh):
+			m.refresh()
 		case key.Matches(tmsg, keymap.Tab), key.Matches(tmsg, keymap.Left), key.Matches(tmsg, keymap.Right):
 			m.state.focused = (m.state.focused + 1) % ComponentCount
 		case key.Matches(tmsg, keymap.Up), key.Matches(tmsg, keymap.Down):

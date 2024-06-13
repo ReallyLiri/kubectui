@@ -37,6 +37,10 @@ var (
 		key.WithKeys("r"),
 		key.WithHelp("r", "rename ctx"),
 	)
+	Refresh = key.NewBinding(
+		key.WithKeys("u"),
+		key.WithHelp("u", "refresh"),
+	)
 	Delete = key.NewBinding(
 		key.WithKeys("d"),
 		key.WithHelp("d", "delete ctx"),
@@ -70,7 +74,7 @@ func GetKeyMap() help.KeyMap {
 
 func (k keyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
-		Help, Quit, Select,
+		Help, Quit, Select, Rename, Delete,
 	}
 }
 
@@ -79,6 +83,6 @@ func (k keyMap) FullHelp() [][]key.Binding {
 		{Tab},
 		{Left, Up, Down, Right},
 		{Rename, Delete, Select},
-		{Help, Quit},
+		{Refresh, Help, Quit},
 	}
 }
