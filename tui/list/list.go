@@ -3,6 +3,8 @@ package list
 import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/reallyliri/kubectui/tui/styles"
 	"github.com/samber/lo"
 	"strings"
 )
@@ -31,8 +33,9 @@ func (t tablesListItem) Description() string {
 	return ""
 }
 
-func NewItemsList(items []string, componentName string, selectedItem string) list.Model {
+func NewItemsList(items []string, componentName string, selectedItem string, selectedItemStyle lipgloss.TerminalColor) list.Model {
 	delegate := list.NewDefaultDelegate()
+	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(selectedItemStyle).BorderForeground(selectedItemStyle)
 	delegate.ShowDescription = false
 	delegate.SetHeight(1)
 	delegate.SetSpacing(0)
@@ -53,6 +56,7 @@ func NewItemsList(items []string, componentName string, selectedItem string) lis
 		0,
 	)
 	l.SetFilteringEnabled(true)
+	l.Styles.ActivePaginationDot = styles.TitleStyle
 	l.SetShowHelp(false)
 	l.SetShowTitle(false)
 	l.SetStatusBarItemName(componentName, componentName)

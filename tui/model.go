@@ -105,7 +105,7 @@ func (m *model) loadNamespaces(context string) {
 }
 
 func (m *model) recreateContextList() {
-	m.vms.contextList = list.NewItemsList(m.contexts, "ctx", m.state.currentContext)
+	m.vms.contextList = list.NewItemsList(m.contexts, "ctx", m.state.currentContext, styles.ContextTint)
 	if m.state.selectedContext == "" {
 		m.state.selectedContext = m.vms.contextList.SelectedItem().FilterValue()
 	}
@@ -123,7 +123,7 @@ func (m *model) recreateNamespaceList(context string) {
 	}
 	m.state.selectedNamespace = namespaceOfContext
 	m.state.currentNamespace = namespaceOfContext
-	m.vms.namespaceList = list.NewItemsList(m.namespacesByContext[context], "ns", m.state.currentNamespace)
+	m.vms.namespaceList = list.NewItemsList(m.namespacesByContext[context], "ns", m.state.currentNamespace, styles.NamespaceTint)
 }
 
 func (m *model) doWithContext(context string, action func()) {

@@ -6,23 +6,28 @@ import (
 )
 
 const (
-	BlueTint          = lipgloss.Color("#388de9")
-	GreenTint         = lipgloss.Color("#46b17b")
-	RedTint           = lipgloss.Color("#ff0000")
-	BorderFocusedTint = lipgloss.Color("63")
-	BorderBlurredTint = lipgloss.Color("240")
+	blueTint    = lipgloss.Color("#6f9ff8")
+	greenTint   = lipgloss.Color("#6ff889")
+	purpleTint  = lipgloss.Color("#ac6ff8")
+	pinkTint    = lipgloss.Color("#EE6FF8")
+	redTint     = lipgloss.Color("#d31919")
+	blurredTint = lipgloss.Color("240")
 )
 
 var (
-	SubTitleTint = help.New().Styles.ShortKey.GetForeground()
+	subTitleTint  = help.New().Styles.ShortKey.GetForeground()
+	ContextTint   = purpleTint
+	NamespaceTint = pinkTint
 
-	TitleStyle              = lipgloss.NewStyle().Foreground(BlueTint)
-	SubTitleStyle           = lipgloss.NewStyle().Foreground(SubTitleTint)
-	BreadcrumbsSectionStyle = SubTitleStyle
-	BreadcrumbsTitleStyle   = lipgloss.NewStyle().Foreground(GreenTint)
-	BorderFocusedStyle      = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(BorderFocusedTint).Padding(0, 1)
-	BorderBlurredStyle      = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(BorderBlurredTint).Padding(0, 1)
-	NoDataStyle             = lipgloss.NewStyle().Foreground(SubTitleTint).AlignHorizontal(lipgloss.Left).Padding(2)
-	ErrorStyle              = lipgloss.NewStyle().Foreground(RedTint)
-	DangerStyle             = lipgloss.NewStyle().Foreground(RedTint)
+	TextStyle                   = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#0c0c0c", Dark: "#f0f0f0"})
+	TitleStyle                  = lipgloss.NewStyle().Foreground(blueTint)
+	SubTitleStyle               = lipgloss.NewStyle().Foreground(subTitleTint)
+	BreadcrumbsSectionStyle     = SubTitleStyle
+	BreadcrumbsTitleStyle       = lipgloss.NewStyle().Foreground(greenTint)
+	BorderFocusedContextStyle   = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(ContextTint).Padding(0, 1)
+	BorderFocusedNamespaceStyle = BorderFocusedContextStyle.BorderForeground(NamespaceTint)
+	BorderBlurredStyle          = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(blurredTint).Padding(0, 1)
+	NoDataStyle                 = lipgloss.NewStyle().Foreground(subTitleTint).AlignHorizontal(lipgloss.Left).Padding(2)
+	ErrorStyle                  = lipgloss.NewStyle().Foreground(redTint)
+	DangerStyle                 = lipgloss.NewStyle().Foreground(redTint)
 )

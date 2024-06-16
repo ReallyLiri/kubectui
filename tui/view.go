@@ -12,7 +12,7 @@ func (m *model) View() string {
 		return ""
 	}
 
-	borderWidth, borderHeight := styles.BorderFocusedStyle.GetFrameSize()
+	borderWidth, borderHeight := styles.BorderBlurredStyle.GetFrameSize()
 
 	title := titleView(m.config.title, m.state.currentContext, m.state.currentNamespace)
 
@@ -21,13 +21,13 @@ func (m *model) View() string {
 			lipgloss.Top,
 			lipgloss.JoinHorizontal(
 				lipgloss.Left,
-				"Are you sure you want to ",
+				styles.TextStyle.Render("Are you sure you want to "),
 				styles.DangerStyle.Render("delete"),
 			),
 			lipgloss.JoinHorizontal(
 				lipgloss.Left,
-				"the context ",
-				lipgloss.NewStyle().Foreground(styles.GreenTint).Render(m.state.selectedContext),
+				styles.TextStyle.Render("the context "),
+				lipgloss.NewStyle().Foreground(styles.ContextTint).Render(m.state.selectedContext),
 				styles.SubTitleStyle.Render(" (y/n or esc to cancel)"),
 			),
 			m.vms.input.View(),
@@ -45,8 +45,8 @@ func (m *model) View() string {
 			lipgloss.Top,
 			lipgloss.JoinHorizontal(
 				lipgloss.Left,
-				"Enter the new name for the context ",
-				lipgloss.NewStyle().Foreground(styles.GreenTint).Render(m.state.selectedContext),
+				styles.TextStyle.Render("Enter the new name for the context "),
+				lipgloss.NewStyle().Foreground(styles.ContextTint).Render(m.state.selectedContext),
 				styles.SubTitleStyle.Render(" (enter to apply or esc to cancel)"),
 			),
 			m.vms.input.View(),
@@ -71,13 +71,13 @@ func (m *model) View() string {
 		contextsList = m.emptyMessage(ContextList, mainWidth, mainHeight)
 	} else {
 		m.vms.contextList.SetSize(mainWidth, mainHeight)
-		contextsList = withBorder(m.vms.contextList.View(), m.state.focused == ContextList)
+		contextsList = withBorder(m.vms.contextList.View(), m.state.focused == ContextList, styles.BorderFocusedContextStyle)
 		if m.state.selectedContext != "" {
 			if m.state.namespacesLoading[m.state.selectedContext] || len(m.namespacesByContext[m.state.selectedContext]) == 0 {
 				namespacesList = m.emptyMessage(NamespaceList, mainWidth, mainHeight)
 			} else {
 				m.vms.namespaceList.SetSize(mainWidth, mainHeight)
-				namespacesList = withBorder(m.vms.namespaceList.View(), m.state.focused == NamespaceList)
+				namespacesList = withBorder(m.vms.namespaceList.View(), m.state.focused == NamespaceList, styles.BorderFocusedNamespaceStyle)
 			}
 		}
 	}
@@ -114,9 +114,9 @@ func titleView(title, context, namespace string) string {
 	return lipgloss.JoinHorizontal(lipgloss.Center, parts...)
 }
 
-func withBorder(ui string, focused bool) string {
+func withBorder(ui string, focused bool, focusedStyle lipgloss.Style) string {
 	if focused {
-		return styles.BorderFocusedStyle.Render(ui)
+		return focusedStyle.Render(ui)
 	} else {
 		return styles.BorderBlurredStyle.Render(ui)
 	}
@@ -124,10 +124,13 @@ func withBorder(ui string, focused bool) string {
 
 func (m *model) emptyMessage(component Component, width, height int) string {
 	var message string
+	var focusedStyle lipgloss.Style
 	switch component {
 	case ContextList:
 		message = "No contexts"
+		focusedStyle = styles.BorderFocusedContextStyle
 	case NamespaceList:
+		focusedStyle = styles.BorderFocusedNamespaceStyle
 		if m.state.namespacesLoading[m.state.selectedContext] {
 			message = "Loading namespaces..."
 		} else {
@@ -140,5 +143,6 @@ func (m *model) emptyMessage(component Component, width, height int) string {
 			Height(height).
 			Render(message),
 		m.state.focused == component,
+		focusedStyle,
 	)
 }
