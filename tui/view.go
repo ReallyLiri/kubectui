@@ -73,7 +73,7 @@ func (m *model) View() string {
 		m.vms.contextList.SetSize(mainWidth, mainHeight)
 		contextsList = withBorder(m.vms.contextList.View(), m.state.focused == ContextList)
 		if m.state.selectedContext != "" {
-			if m.state.namespacesLoading || len(m.namespacesByContext[m.state.selectedContext]) == 0 {
+			if m.state.namespacesLoading[m.state.selectedContext] || len(m.namespacesByContext[m.state.selectedContext]) == 0 {
 				namespacesList = m.emptyMessage(NamespaceList, mainWidth, mainHeight)
 			} else {
 				m.vms.namespaceList.SetSize(mainWidth, mainHeight)
@@ -128,7 +128,7 @@ func (m *model) emptyMessage(component Component, width, height int) string {
 	case ContextList:
 		message = "No contexts"
 	case NamespaceList:
-		if m.state.namespacesLoading {
+		if m.state.namespacesLoading[m.state.selectedContext] {
 			message = "Loading namespaces..."
 		} else {
 			message = "No namespaces"

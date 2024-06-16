@@ -48,8 +48,9 @@ func newModel(title string, kubeconf *kubeconfig.Kubeconfig) (*model, error) {
 		contexts:            contexts,
 		namespacesByContext: make(map[string][]string, len(contexts)),
 		state: modelState{
-			currentContext: kubeconf.GetCurrentContext(),
-			focused:        ContextList,
+			currentContext:    kubeconf.GetCurrentContext(),
+			focused:           ContextList,
+			namespacesLoading: make(map[string]bool, len(contexts)),
 		},
 		config: modelConfig{
 			keymap: keymap.GetKeyMap(),
@@ -85,7 +86,7 @@ func (m *model) loadNamespaces(context string) {
 		return
 	}
 
-	m.state.namespacesLoading = true
+	m.state.namespacesLoading[context] = true
 	go func() {
 		m.doWithContext(context, func() {
 			namespaces, err := kubeclient.QueryNamespaces(m.kubeconf)
@@ -97,8 +98,8 @@ func (m *model) loadNamespaces(context string) {
 			}
 			m.namespacesByContext[context] = namespaces
 		})
-		m.state.namespacesLoading = false
 		m.recreateNamespaceList(context)
+		m.state.namespacesLoading[context] = false
 		m.sender.Send(actionDoneMsg{})
 	}()
 }
@@ -111,11 +112,17 @@ func (m *model) recreateContextList() {
 }
 
 func (m *model) recreateNamespaceList(context string) {
+	m.mut.Lock()
+	defer m.mut.Unlock()
+	if m.state.selectedContext != context {
+		return
+	}
 	namespaceOfContext, err := m.kubeconf.NamespaceOfContext(context)
 	if err != nil {
 		m.onError(fmt.Errorf("failed to get current namespace of %s: %w", context, err))
 	}
 	m.state.selectedNamespace = namespaceOfContext
+	m.state.currentNamespace = namespaceOfContext
 	m.vms.namespaceList = list.NewItemsList(m.namespacesByContext[context], "ns", m.state.currentNamespace)
 }
 
@@ -158,7 +165,6 @@ func (m *model) setCurrentNamespaceFromSelected() {
 		m.onError(fmt.Errorf("failed to switch to namespace %s: %w", m.state.selectedNamespace, err))
 	}
 	m.saveKubeconfig()
-	m.state.currentNamespace = m.state.selectedNamespace
 	m.recreateNamespaceList(m.state.currentContext)
 }
 

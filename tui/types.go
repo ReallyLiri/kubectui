@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"sync"
 )
 
 type MessageSender interface {
@@ -17,7 +18,7 @@ type modelState struct {
 	currentNamespace  string
 	selectedContext   string
 	selectedNamespace string
-	namespacesLoading bool
+	namespacesLoading map[string]bool
 	focused           Component
 	renaming          bool
 	deleting          bool
@@ -39,6 +40,7 @@ type viewModels struct {
 }
 
 type model struct {
+	mut                 sync.Mutex
 	kubeconf            *kubeconfig.Kubeconfig
 	contexts            []string
 	namespacesByContext map[string][]string
