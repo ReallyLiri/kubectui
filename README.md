@@ -2,9 +2,10 @@
 
 A terminal UI for [ahmetb/kubectx|kubens](https://github.com/ahmetb/kubectx), built using [charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea)
 
+Installation - make sure you have `go`
+
 ```sh
-git clone github.com/reallyliri/kubectui.git
-go install .
+curl -sL https://raw.githubusercontent.com/ReallyLiri/kubectui/main/install.sh | bash
 ```
 
 ![demo](https://i.imgur.com/Q5ziJXH.gif)
