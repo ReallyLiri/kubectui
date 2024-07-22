@@ -2,6 +2,7 @@ package tui
 
 import (
 	_ "embed"
+
 	"github.com/charmbracelet/lipgloss"
 	"github.com/reallyliri/kubectui/tui/format"
 	"github.com/reallyliri/kubectui/tui/styles"
@@ -73,7 +74,9 @@ func (m *model) View() string {
 		m.vms.contextList.SetSize(mainWidth, mainHeight)
 		contextsList = withBorder(m.vms.contextList.View(), m.state.focused == ContextList, styles.BorderFocusedContextStyle)
 		if m.state.selectedContext != "" {
-			if m.state.namespacesLoading[m.state.selectedContext] || len(m.namespacesByContext[m.state.selectedContext]) == 0 {
+			loading, _ := m.state.namespacesLoading.Load(m.state.selectedContext)
+			namespaces, _ := m.namespacesByContext.Load(m.state.selectedContext)
+			if loading || len(namespaces) == 0 {
 				namespacesList = m.emptyMessage(NamespaceList, mainWidth, mainHeight)
 			} else {
 				m.vms.namespaceList.SetSize(mainWidth, mainHeight)
@@ -131,7 +134,8 @@ func (m *model) emptyMessage(component Component, width, height int) string {
 		focusedStyle = styles.BorderFocusedContextStyle
 	case NamespaceList:
 		focusedStyle = styles.BorderFocusedNamespaceStyle
-		if m.state.namespacesLoading[m.state.selectedContext] {
+		loading, _ := m.state.namespacesLoading.Load(m.state.selectedContext)
+		if loading {
 			message = "Loading namespaces..."
 		} else {
 			message = "No namespaces"

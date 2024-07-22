@@ -1,12 +1,14 @@
 package tui
 
 import (
+	"sync"
+
 	"github.com/ahmetb/kubectx/core/kubeconfig"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"sync"
+	"github.com/reallyliri/syncmap"
 )
 
 type MessageSender interface {
@@ -18,7 +20,7 @@ type modelState struct {
 	currentNamespace  string
 	selectedContext   string
 	selectedNamespace string
-	namespacesLoading map[string]bool
+	namespacesLoading syncmap.SyncMap[string, bool]
 	focused           Component
 	renaming          bool
 	deleting          bool
@@ -43,7 +45,7 @@ type model struct {
 	mut                 sync.Mutex
 	kubeconf            *kubeconfig.Kubeconfig
 	contexts            []string
-	namespacesByContext map[string][]string
+	namespacesByContext syncmap.SyncMap[string, []string]
 
 	state  modelState
 	config modelConfig

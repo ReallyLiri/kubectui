@@ -2,8 +2,10 @@ package tui
 
 import (
 	"context"
-	"facette.io/natsort"
 	"fmt"
+	"log"
+
+	"facette.io/natsort"
 	"github.com/ahmetb/kubectx/core/kubeclient"
 	"github.com/ahmetb/kubectx/core/kubeconfig"
 	"github.com/charmbracelet/bubbles/help"
@@ -12,7 +14,7 @@ import (
 	"github.com/reallyliri/kubectui/tui/keymap"
 	"github.com/reallyliri/kubectui/tui/list"
 	"github.com/reallyliri/kubectui/tui/styles"
-	"log"
+	"github.com/reallyliri/syncmap"
 )
 
 var _ tea.Model = &model{}
@@ -46,11 +48,11 @@ func newModel(title string, kubeconf *kubeconfig.Kubeconfig) (*model, error) {
 	m := &model{
 		kubeconf:            kubeconf,
 		contexts:            contexts,
-		namespacesByContext: make(map[string][]string, len(contexts)),
+		namespacesByContext: syncmap.SyncMap[string, []string]{},
 		state: modelState{
 			currentContext:    kubeconf.GetCurrentContext(),
 			focused:           ContextList,
-			namespacesLoading: make(map[string]bool, len(contexts)),
+			namespacesLoading: syncmap.SyncMap[string, bool]{},
 		},
 		config: modelConfig{
 			keymap: keymap.GetKeyMap(),
@@ -81,12 +83,12 @@ func (m *model) onNamespaceSelected(namespace string) {
 }
 
 func (m *model) loadNamespaces(context string) {
-	if _, ok := m.namespacesByContext[context]; ok {
+	if _, ok := m.namespacesByContext.Load(context); ok {
 		m.recreateNamespaceList(context)
 		return
 	}
 
-	m.state.namespacesLoading[context] = true
+	m.state.namespacesLoading.Store(context, true)
 	go func() {
 		m.doWithContext(context, func() {
 			namespaces, err := kubeclient.QueryNamespaces(m.kubeconf)
@@ -96,10 +98,10 @@ func (m *model) loadNamespaces(context string) {
 			if namespaces != nil {
 				natsort.Sort(namespaces)
 			}
-			m.namespacesByContext[context] = namespaces
+			m.namespacesByContext.Store(context, namespaces)
 		})
 		m.recreateNamespaceList(context)
-		m.state.namespacesLoading[context] = false
+		m.state.namespacesLoading.Store(context, false)
 		m.sender.Send(actionDoneMsg{})
 	}()
 }
@@ -123,7 +125,8 @@ func (m *model) recreateNamespaceList(context string) {
 	}
 	m.state.selectedNamespace = namespaceOfContext
 	m.state.currentNamespace = namespaceOfContext
-	m.vms.namespaceList = list.NewItemsList(m.namespacesByContext[context], "ns", m.state.currentNamespace, styles.NamespaceTint)
+	namespaces, _ := m.namespacesByContext.Load(context)
+	m.vms.namespaceList = list.NewItemsList(namespaces, "ns", m.state.currentNamespace, styles.NamespaceTint)
 }
 
 func (m *model) doWithContext(context string, action func()) {
@@ -185,8 +188,8 @@ func (m *model) renameSelectedContext(newName string) {
 	m.saveKubeconfig()
 	m.contexts = m.kubeconf.ContextNames()
 	natsort.Sort(m.contexts)
-	m.namespacesByContext[newName] = m.namespacesByContext[prevName]
-	delete(m.namespacesByContext, prevName)
+	namespaces, _ := m.namespacesByContext.LoadAndDelete(prevName)
+	m.namespacesByContext.Store(newName, namespaces)
 	m.state.selectedContext = newName
 	m.recreateContextList()
 }
@@ -204,7 +207,7 @@ func (m *model) deleteSelectedContext() {
 	}
 	m.saveKubeconfig()
 	m.contexts = m.kubeconf.ContextNames()
-	delete(m.namespacesByContext, selectedContext)
+	m.namespacesByContext.Delete(selectedContext)
 	natsort.Sort(m.contexts)
 	m.state.selectedContext = ""
 	m.recreateContextList()
@@ -225,7 +228,7 @@ func (m *model) refresh() {
 	m.contexts = contexts
 	m.state.selectedContext = ""
 	m.state.selectedNamespace = ""
-	m.namespacesByContext = make(map[string][]string, len(contexts))
+	m.namespacesByContext = syncmap.SyncMap[string, []string]{}
 	m.recreateContextList()
 	m.onContextSelected(m.state.selectedContext)
 }
