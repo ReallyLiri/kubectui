@@ -93,7 +93,8 @@ func (m *model) loadNamespaces(context string) {
 		m.doWithContext(context, func() {
 			namespaces, err := kubeclient.QueryNamespaces(m.kubeconf)
 			if err != nil {
-				m.onError(fmt.Errorf("failed to query namespaces of %s: %w", context, err))
+				// m.onError(fmt.Errorf("failed to query namespaces of %s: %w", context, err))
+				namespaces = nil
 			}
 			if namespaces != nil {
 				natsort.Sort(namespaces)

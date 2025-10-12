@@ -11,7 +11,7 @@ import (
 	"github.com/reallyliri/syncmap"
 )
 
-type MessageSender interface {
+type MessageSenderRenamed interface {
 	Send(msg tea.Msg)
 }
 
@@ -50,7 +50,7 @@ type model struct {
 	state  modelState
 	config modelConfig
 	vms    viewModels
-	sender MessageSender
+	sender MessageSenderRenamed
 }
 
 type Component int

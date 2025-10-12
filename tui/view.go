@@ -138,7 +138,7 @@ func (m *model) emptyMessage(component Component, width, height int) string {
 		if loading {
 			message = "Loading namespaces..."
 		} else {
-			message = "No namespaces"
+			message = "No namespaces or query failed"
 		}
 	}
 	return withBorder(
